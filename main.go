@@ -5,13 +5,21 @@ import (
 	"net/http"
 )
 
+func handlerReadiness(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "text/plain; charset=utf-8")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(http.StatusText(http.StatusOK)))
+}
+
 func main() {
-	const filepath = "./"
+	const filepath = "./site"
 	const port = "8080"
+	const readinesspath = "/healthz"
 
 	mux := http.NewServeMux()
 
-	mux.Handle("/", http.FileServer(http.Dir(filepath)))
+	mux.Handle("/app/", http.StripPrefix("/app", http.FileServer(http.Dir(filepath))))
+	mux.HandleFunc(readinesspath, handlerReadiness)
 
 	srv := &http.Server{
 		Addr:    ":" + port,
