@@ -40,15 +40,16 @@ func handlerReadiness(w http.ResponseWriter, r *http.Request) {
 func main() {
 	const filepath = "./site"
 	const port = "8080"
-	const readinesspath = "GET /healthz"
-	const metricspath = "GET /metrics"
-	const metricsreset = "POST /reset"
+	const readinesspath = "GET /api/healthz"
+	const metricspath = "GET /api/metrics"
+	const metricsreset = "POST /api/reset"
 
 	mux := http.NewServeMux()
 
 	apiCfg := &apiConfig{}
 
 	mux.Handle("/app/", apiCfg.middlewareMetricsInc(http.StripPrefix("/app", http.FileServer(http.Dir(filepath)))))
+
 	mux.HandleFunc(readinesspath, handlerReadiness)
 	mux.HandleFunc(metricspath, apiCfg.handleMetrics)
 	mux.HandleFunc(metricsreset, apiCfg.handleMetricsReset)
