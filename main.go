@@ -40,9 +40,9 @@ func handlerReadiness(w http.ResponseWriter, r *http.Request) {
 func main() {
 	const filepath = "./site"
 	const port = "8080"
-	const readinesspath = "/healthz"
-	const metricspath = "/metrics"
-	const metricsreset = "/reset"
+	const readinesspath = "GET /healthz"
+	const metricspath = "GET /metrics"
+	const metricsreset = "POST /reset"
 
 	mux := http.NewServeMux()
 
