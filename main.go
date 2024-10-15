@@ -1,16 +1,24 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"strings"
 	"sync/atomic"
+
+	"chirpy/internal/database"
+
+	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 )
 
 type apiConfig struct {
 	fileserverHits atomic.Int32
+	db             *database.Queries
 }
 
 func (cfg *apiConfig) middlewareMetricsInc(next http.Handler) http.Handler {
@@ -126,9 +134,20 @@ func main() {
 	const metricsreset = "POST /admin/reset"
 	const validatepath = "POST /api/validate_chirp"
 
+	godotenv.Load()
+
+	dbURL := os.Getenv("DB_URL")
+	fmt.Println("DB Connection: ", dbURL)
+
+	dbConn, err := sql.Open("postgres", dbURL)
+	if err != nil {
+		log.Fatal(fmt.Errorf("error opening db: %w", err))
+	}
+
 	mux := http.NewServeMux()
 
 	apiCfg := &apiConfig{}
+	apiCfg.db = database.New(dbConn)
 
 	mux.Handle("/app/", apiCfg.middlewareMetricsInc(http.StripPrefix("/app", http.FileServer(http.Dir(filepath)))))
 
