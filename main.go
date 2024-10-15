@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 	"sync/atomic"
 )
 
@@ -53,7 +54,7 @@ func handlerValidate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type valid_reponse struct {
-		Valid bool `json:"valid"`
+		Cleaned_body string `json:"cleaned_body"`
 	}
 
 	decoder := json.NewDecoder(r.Body)
@@ -70,8 +71,22 @@ func handlerValidate(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusBadRequest, "chirpy looong", nil)
 	}
 
+	var updatedMessage string
+	var badWords = [...]string{"kerfuffle", "sharbert", "fornax"}
+	const aWord = "****"
+
+	words := strings.Split(params.Body, " ")
+	for i, w := range words {
+		for _, b := range badWords {
+			if strings.ToLower(w) == b {
+				words[i] = aWord
+			}
+		}
+	}
+	updatedMessage = strings.Join(words, " ")
+
 	respondWithJSON(w, http.StatusOK, valid_reponse{
-		Valid: true,
+		Cleaned_body: updatedMessage,
 	})
 
 }
